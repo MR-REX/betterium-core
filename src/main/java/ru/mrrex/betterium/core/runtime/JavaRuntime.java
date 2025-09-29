@@ -103,7 +103,7 @@ public record JavaRuntime(Path javaExecutablePath) {
             throw new JavaProcessTimeoutException(PROCESS_TIMEOUT);
         }
 
-        String processOutput = "";
+        String processOutput;
 
         try (InputStream inputStream = process.getInputStream()) {
             processOutput = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8).trim();
