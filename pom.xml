@@ -9,11 +9,17 @@
     <version>0.0.0</version>
 
     <properties>
+        <!-- Java Runtime Configuration -->
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- JUnit 5 Configuration -->
         <junit.jupiter.version>5.13.4</junit.jupiter.version>
         <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
+
+        <!-- Jackson Json Configuration -->
+        <fasterxml.jackson.version>2.19.0</fasterxml.jackson.version>
     </properties>
 
     <dependencies>
@@ -34,6 +40,11 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${fasterxml.jackson.version}</version>
         </dependency>
     </dependencies>
 
