@@ -21,21 +21,11 @@ public record PlayerConfiguration(
 ) {
 
     /**
-     * Static factory method to obtain a new builder instance.
-     *
-     * @return A new Builder instance.
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    /**
      * Compact constructor used for validating required fields.
      * Invoked directly or automatically by Jackson during deserialization.
      *
-     * @param userName The user's unique name.
-     * @param sessionId The identifier for the current session.
-     * @param playerUuid The player's unique identifier.
+     * @throws NullPointerException If {@link #userName} or {@link #playerUuid} is null.
+     * @throws IllegalArgumentException If {@link #userName} is blank (empty or contains only whitespaces).
      */
     public PlayerConfiguration {
         Objects.requireNonNull(userName, "User name (userName) must not be null");
@@ -46,8 +36,17 @@ public record PlayerConfiguration(
     }
 
     /**
+     * Static factory method to obtain a new builder instance.
+     *
+     * @return A new Builder instance.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Nested static Builder class.
-     * Allows flexible assembly of the PlayerConfiguration object
+     * Allows flexible assembly of the {@link PlayerConfiguration} object
      * using the Fluent API design pattern.
      */
     public static class Builder {
