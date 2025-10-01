@@ -18,8 +18,11 @@
         <junit.jupiter.version>5.13.4</junit.jupiter.version>
         <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
 
-        <!-- Jackson Json Configuration -->
-        <fasterxml.jackson.version>2.19.0</fasterxml.jackson.version>
+        <!-- Jackson Configuration -->
+        <jackson.version>2.19.0</jackson.version>
+
+        <!-- Mockito Configuration -->
+        <mockito.version>5.20.0</mockito.version>
     </properties>
 
     <dependencies>
@@ -44,7 +47,19 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${fasterxml.jackson.version}</version>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.20.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -54,6 +69,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <argLine>
+                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
+                        -Xshare:off
+                    </argLine>
+                </configuration>
             </plugin>
         </plugins>
     </build>
