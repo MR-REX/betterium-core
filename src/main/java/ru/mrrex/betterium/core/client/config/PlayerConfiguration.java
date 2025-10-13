@@ -1,4 +1,4 @@
-package ru.mrrex.betterium.core.client;
+package ru.mrrex.betterium.core.client.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,9 +15,14 @@ import java.util.UUID;
  * @param playerUuid The player's unique identifier.
  */
 public record PlayerConfiguration(
-        @JsonProperty("user_name") String userName,
-        @JsonIgnore String sessionId,
-        @JsonProperty("player_uuid") UUID playerUuid
+        @JsonProperty("user_name")
+        String userName,
+
+        @JsonIgnore
+        String sessionId,
+
+        @JsonProperty("player_uuid")
+        UUID playerUuid
 ) {
 
     /**
@@ -51,9 +56,9 @@ public record PlayerConfiguration(
      */
     public static class Builder {
 
-        private String userName = null;
-        private String sessionId = null;
-        private UUID playerUuid = null;
+        private String userName;
+        private String sessionId;
+        private UUID playerUuid;
 
         private Builder() {}
 
