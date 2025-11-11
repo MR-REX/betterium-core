@@ -18,19 +18,35 @@ public record ClientConfiguration(
         @JsonProperty("author")
         String author,
 
+        @JsonProperty("main_class")
+        String mainClass,
+
         @JsonProperty("artifacts")
-        Set<Artifact> artifacts
+        Set<Artifact> artifacts,
+
+        @JsonProperty("jvm_arguments")
+        Set<String> jvmArguments,
+
+        @JsonProperty("arguments")
+        Set<String> arguments
 ) {
 
     private static final String DEFAULT_NAME = "Unnamed Client Configuration";
     private static final String DEFAULT_VERSION = "0.0.0";
     private static final String DEFAULT_AUTHOR = "N/A";
 
+    private static final String DEFAULT_MAIN_CLASS = "net.minecraft.client.Minecraft";
+
     @JsonCreator
     public ClientConfiguration {
-        name = (name != null) ? name : DEFAULT_NAME;
-        version = (version != null) ? version : DEFAULT_VERSION;
-        author = (author != null) ? author : DEFAULT_AUTHOR;
+        Objects.requireNonNull(mainClass, "Main class (mainClass) must not be null");
+
+        name = (name != null && !name.isBlank()) ? name : DEFAULT_NAME;
+        version = (version != null && !version.isBlank()) ? version : DEFAULT_VERSION;
+        author = (author != null && !author.isBlank()) ? author : DEFAULT_AUTHOR;
+
+        if (mainClass.isBlank())
+            throw new IllegalArgumentException("Client configuration must define runnable main class");
 
         if (artifacts == null)
             throw new IllegalArgumentException("Client configuration must define artifacts");
@@ -39,6 +55,8 @@ public record ClientConfiguration(
             throw new IllegalArgumentException("Client configuration must contain at least one artifact");
 
         artifacts = Set.copyOf(artifacts);
+        jvmArguments = Set.copyOf(jvmArguments);
+        arguments = Set.copyOf(arguments);
     }
 
     public Builder builder() {
@@ -51,7 +69,12 @@ public record ClientConfiguration(
         private String version;
         private String author;
 
+        private String mainClass;
+
         private final Set<Artifact> artifacts = new HashSet<>();
+
+        private final Set<String> jvmArguments = new HashSet<>();
+        private final Set<String> arguments = new HashSet<>();
 
         private Builder() {}
 
@@ -70,6 +93,16 @@ public record ClientConfiguration(
             return this;
         }
 
+        public Builder withMainClass(String mainClass) {
+            Objects.requireNonNull(mainClass, "Main class must not be null");
+
+            if (mainClass.isBlank())
+                throw new IllegalArgumentException("Main class must not be empty string");
+
+            this.mainClass = mainClass;
+            return this;
+        }
+
         public Builder withArtifacts(Set<Artifact> artifacts) {
             Objects.requireNonNull(artifacts, "Artifacts set must not be null");
             this.artifacts.addAll(artifacts);
@@ -84,7 +117,38 @@ public record ClientConfiguration(
             return this;
         }
 
+        public Builder withJvmArguments(Set<String> jvmArguments) {
+            Objects.requireNonNull(jvmArguments, "JVM Arguments must not be null");
+            this.jvmArguments.addAll(jvmArguments);
+
+            return this;
+        }
+
+        public Builder addJvmArgument(String jvmArgument) {
+            Objects.requireNonNull(jvmArgument, "JVM Argument must not be null");
+            this.jvmArguments.add(jvmArgument);
+
+            return this;
+        }
+
+        public Builder withArguments(Set<String> arguments) {
+            Objects.requireNonNull(arguments, "Arguments must not be null");
+            this.arguments.addAll(arguments);
+
+            return this;
+        }
+
+        public Builder addArgument(String argument) {
+            Objects.requireNonNull(argument, "Argument must not be null");
+            this.arguments.add(argument);
+
+            return this;
+        }
+
         public ClientConfiguration build() {
+            if (mainClass == null || mainClass.isBlank())
+                throw new IllegalStateException("Client configuration must contain main class");
+
             if (artifacts.isEmpty())
                 throw new IllegalStateException("Client configuration must contain at least one artifact");
 
@@ -92,7 +156,10 @@ public record ClientConfiguration(
                     name,
                     version,
                     author,
-                    artifacts
+                    mainClass,
+                    artifacts,
+                    jvmArguments,
+                    arguments
             );
         }
     }
