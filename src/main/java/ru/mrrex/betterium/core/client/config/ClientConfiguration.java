@@ -35,8 +35,6 @@ public record ClientConfiguration(
     private static final String DEFAULT_VERSION = "0.0.0";
     private static final String DEFAULT_AUTHOR = "N/A";
 
-    private static final String DEFAULT_MAIN_CLASS = "net.minecraft.client.Minecraft";
-
     @JsonCreator
     public ClientConfiguration {
         Objects.requireNonNull(mainClass, "Main class (mainClass) must not be null");
