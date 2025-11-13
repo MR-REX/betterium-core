@@ -22,6 +22,8 @@ module ru.mrrex.betterium.core {
     exports ru.mrrex.betterium.core.download.listener;
     exports ru.mrrex.betterium.core.download.stream;
 
+    exports ru.mrrex.betterium.core.hash;
+
     exports ru.mrrex.betterium.core.jackson;
 
     exports ru.mrrex.betterium.core.library;
