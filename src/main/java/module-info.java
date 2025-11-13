@@ -7,6 +7,8 @@ module ru.mrrex.betterium.core {
     exports ru.mrrex.betterium.core.artifact;
     exports ru.mrrex.betterium.core.artifact.implementation;
 
+    exports ru.mrrex.betterium.core.checksum;
+
     exports ru.mrrex.betterium.core.client;
     exports ru.mrrex.betterium.core.client.config;
 
@@ -19,6 +21,8 @@ module ru.mrrex.betterium.core {
     exports ru.mrrex.betterium.core.download.exception;
     exports ru.mrrex.betterium.core.download.listener;
     exports ru.mrrex.betterium.core.download.stream;
+
+    exports ru.mrrex.betterium.core.jackson;
 
     exports ru.mrrex.betterium.core.library;
     exports ru.mrrex.betterium.core.library.implementation;

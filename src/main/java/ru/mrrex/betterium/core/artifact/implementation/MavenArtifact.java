@@ -2,15 +2,18 @@ package ru.mrrex.betterium.core.artifact.implementation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import ru.mrrex.betterium.core.artifact.Artifact;
+import ru.mrrex.betterium.core.checksum.ChecksumAlgorithm;
+import ru.mrrex.betterium.core.jackson.HexLongDeserializer;
+import ru.mrrex.betterium.core.jackson.HexLongSerializer;
 import ru.mrrex.betterium.core.library.NativeLibrary;
+import ru.mrrex.betterium.core.resource.CheckableResource;
 import ru.mrrex.betterium.core.resource.DownloadableResource;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public record MavenArtifact(
         @JsonProperty("group_id")
@@ -22,9 +25,14 @@ public record MavenArtifact(
         @JsonProperty("version")
         String version,
 
+        @JsonProperty("checksums")
+        @JsonSerialize(contentUsing = HexLongSerializer.class)
+        @JsonDeserialize(contentUsing = HexLongDeserializer.class)
+        Map<ChecksumAlgorithm, Long> checksums,
+
         @JsonProperty("dependencies")
         Set<NativeLibrary> dependencies
-) implements Artifact, DownloadableResource {
+) implements Artifact, DownloadableResource, CheckableResource {
 
     private static final URI MAVEN_CENTRAL_BASE_URI = URI.create("https://repo1.maven.org/maven2");
 
@@ -33,6 +41,10 @@ public record MavenArtifact(
         Objects.requireNonNull(groupId, "Group ID (groupId) must not be null");
         Objects.requireNonNull(artifactId, "Artifact ID (artifactId) must not be null");
         Objects.requireNonNull(version, "Version must not be null");
+
+        checksums = (checksums != null)
+                ? Map.copyOf(checksums)
+                : Collections.emptyMap();
 
         dependencies = (dependencies != null)
                 ? Set.copyOf(dependencies)
@@ -47,6 +59,11 @@ public record MavenArtifact(
     @Override
     public URI getSourceUri() {
         return MAVEN_CENTRAL_BASE_URI.resolve(getRelativePath());
+    }
+
+    @Override
+    public Map<ChecksumAlgorithm, Long> getChecksums() {
+        return Map.copyOf(checksums);
     }
 
     private String getRelativePath() {
@@ -69,6 +86,7 @@ public record MavenArtifact(
         private String artifactId;
         private String version;
 
+        private final Map<ChecksumAlgorithm, Long> checksums = new EnumMap<>(ChecksumAlgorithm.class);
         private final Set<NativeLibrary> dependencies = new HashSet<>();
 
         private Builder() {}
@@ -85,6 +103,20 @@ public record MavenArtifact(
 
         public Builder withVersion(String version) {
             this.version = Objects.requireNonNull(version, "Version must not be null");
+            return this;
+        }
+
+        public Builder withChecksums(Map<ChecksumAlgorithm, Long> checksums) {
+            Objects.requireNonNull(checksums, "Checksums map must not be null");
+            this.checksums.putAll(checksums);
+
+            return this;
+        }
+
+        public Builder withChecksum(ChecksumAlgorithm algorithm, long checksumValue) {
+            Objects.requireNonNull(algorithm, "Checksum algorithm must not be null");
+            this.checksums.put(algorithm, checksumValue);
+
             return this;
         }
 
@@ -116,6 +148,7 @@ public record MavenArtifact(
                     groupId,
                     artifactId,
                     version,
+                    checksums,
                     dependencies
             );
         }

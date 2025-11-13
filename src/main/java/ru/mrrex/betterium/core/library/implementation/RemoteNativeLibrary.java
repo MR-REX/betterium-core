@@ -2,27 +2,39 @@ package ru.mrrex.betterium.core.library.implementation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import ru.mrrex.betterium.core.checksum.ChecksumAlgorithm;
+import ru.mrrex.betterium.core.jackson.HexLongDeserializer;
+import ru.mrrex.betterium.core.jackson.HexLongSerializer;
 import ru.mrrex.betterium.core.library.NativeLibrary;
+import ru.mrrex.betterium.core.resource.CheckableResource;
 import ru.mrrex.betterium.core.resource.DownloadableResource;
 import ru.mrrex.betterium.core.resource.ConditionalResource;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public record RemoteNativeLibrary(
         @JsonProperty("source_uri")
         URI sourceUri,
 
+        @JsonProperty("checksums")
+        @JsonSerialize(contentUsing = HexLongSerializer.class)
+        @JsonDeserialize(contentUsing = HexLongDeserializer.class)
+        Map<ChecksumAlgorithm, Long> checksums,
+
         @JsonProperty("conditions")
         Map<String, String> conditions
-) implements NativeLibrary, DownloadableResource, ConditionalResource {
+) implements NativeLibrary, DownloadableResource, ConditionalResource, CheckableResource {
 
     @JsonCreator
     public RemoteNativeLibrary {
         Objects.requireNonNull(sourceUri, "Source URI (sourceUri) must not be null");
+
+        checksums = (checksums != null)
+                ? Map.copyOf(checksums)
+                : Collections.emptyMap();
 
         conditions = (conditions != null)
                 ? Map.copyOf(conditions)
@@ -32,6 +44,11 @@ public record RemoteNativeLibrary(
     @Override
     public URI getSourceUri() {
         return sourceUri;
+    }
+
+    @Override
+    public Map<ChecksumAlgorithm, Long> getChecksums() {
+        return Map.copyOf(checksums);
     }
 
     @Override
@@ -47,12 +64,27 @@ public record RemoteNativeLibrary(
 
         private URI sourceUri;
 
+        private final Map<ChecksumAlgorithm, Long> checksums = new EnumMap<>(ChecksumAlgorithm.class);
         private final Map<String, String> conditions = new HashMap<>();
 
         private Builder() {}
 
         public Builder withSourceUri(URI sourceUri) {
             this.sourceUri = Objects.requireNonNull(sourceUri, "Source URI (sourceUri) must not be null");
+            return this;
+        }
+
+        public Builder withChecksums(Map<ChecksumAlgorithm, Long> checksums) {
+            Objects.requireNonNull(checksums, "Checksums map must not be null");
+            this.checksums.putAll(checksums);
+
+            return this;
+        }
+
+        public Builder withChecksum(ChecksumAlgorithm algorithm, long checksumValue) {
+            Objects.requireNonNull(algorithm, "Checksum algorithm must not be null");
+            this.checksums.put(algorithm, checksumValue);
+
             return this;
         }
 
@@ -78,6 +110,7 @@ public record RemoteNativeLibrary(
 
             return new RemoteNativeLibrary(
                     sourceUri,
+                    checksums,
                     conditions
             );
         }
