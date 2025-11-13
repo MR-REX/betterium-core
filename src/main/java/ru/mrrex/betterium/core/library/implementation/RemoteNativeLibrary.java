@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import ru.mrrex.betterium.core.checksum.ChecksumAlgorithm;
+import ru.mrrex.betterium.core.hash.HashAlgorithm;
 import ru.mrrex.betterium.core.jackson.HexLongDeserializer;
 import ru.mrrex.betterium.core.jackson.HexLongSerializer;
 import ru.mrrex.betterium.core.library.NativeLibrary;
@@ -24,6 +25,9 @@ public record RemoteNativeLibrary(
         @JsonDeserialize(contentUsing = HexLongDeserializer.class)
         Map<ChecksumAlgorithm, Long> checksums,
 
+        @JsonProperty("hashes")
+        Map<HashAlgorithm, String> hashes,
+
         @JsonProperty("conditions")
         Map<String, String> conditions
 ) implements NativeLibrary, DownloadableResource, ConditionalResource, CheckableResource {
@@ -34,6 +38,10 @@ public record RemoteNativeLibrary(
 
         checksums = (checksums != null)
                 ? Map.copyOf(checksums)
+                : Collections.emptyMap();
+
+        hashes = (hashes != null)
+                ? Map.copyOf(hashes)
                 : Collections.emptyMap();
 
         conditions = (conditions != null)
@@ -52,6 +60,11 @@ public record RemoteNativeLibrary(
     }
 
     @Override
+    public Map<HashAlgorithm, String> getHashes() {
+        return Map.copyOf(hashes);
+    }
+
+    @Override
     public Map<String, String> getConditions() {
         return conditions;
     }
@@ -65,6 +78,8 @@ public record RemoteNativeLibrary(
         private URI sourceUri;
 
         private final Map<ChecksumAlgorithm, Long> checksums = new EnumMap<>(ChecksumAlgorithm.class);
+        private final Map<HashAlgorithm, String> hashes = new EnumMap<>(HashAlgorithm.class);
+
         private final Map<String, String> conditions = new HashMap<>();
 
         private Builder() {}
@@ -84,6 +99,20 @@ public record RemoteNativeLibrary(
         public Builder withChecksum(ChecksumAlgorithm algorithm, long checksumValue) {
             Objects.requireNonNull(algorithm, "Checksum algorithm must not be null");
             this.checksums.put(algorithm, checksumValue);
+
+            return this;
+        }
+
+        public Builder withHashes(Map<HashAlgorithm, String> hashes) {
+            Objects.requireNonNull(hashes, "Hash map must not be null");
+            this.hashes.putAll(hashes);
+
+            return this;
+        }
+
+        public Builder withHash(HashAlgorithm algorithm, String hashValue) {
+            Objects.requireNonNull(algorithm, "Hash algorithm must not be null");
+            this.hashes.put(algorithm, hashValue);
 
             return this;
         }
@@ -111,6 +140,7 @@ public record RemoteNativeLibrary(
             return new RemoteNativeLibrary(
                     sourceUri,
                     checksums,
+                    hashes,
                     conditions
             );
         }

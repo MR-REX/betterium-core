@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import ru.mrrex.betterium.core.artifact.Artifact;
 import ru.mrrex.betterium.core.checksum.ChecksumAlgorithm;
+import ru.mrrex.betterium.core.hash.HashAlgorithm;
 import ru.mrrex.betterium.core.jackson.HexLongDeserializer;
 import ru.mrrex.betterium.core.jackson.HexLongSerializer;
 import ru.mrrex.betterium.core.library.NativeLibrary;
@@ -30,6 +31,9 @@ public record MavenArtifact(
         @JsonDeserialize(contentUsing = HexLongDeserializer.class)
         Map<ChecksumAlgorithm, Long> checksums,
 
+        @JsonProperty("hashes")
+        Map<HashAlgorithm, String> hashes,
+
         @JsonProperty("dependencies")
         Set<NativeLibrary> dependencies
 ) implements Artifact, DownloadableResource, CheckableResource {
@@ -44,6 +48,10 @@ public record MavenArtifact(
 
         checksums = (checksums != null)
                 ? Map.copyOf(checksums)
+                : Collections.emptyMap();
+
+        hashes = (hashes != null)
+                ? Map.copyOf(hashes)
                 : Collections.emptyMap();
 
         dependencies = (dependencies != null)
@@ -64,6 +72,11 @@ public record MavenArtifact(
     @Override
     public Map<ChecksumAlgorithm, Long> getChecksums() {
         return Map.copyOf(checksums);
+    }
+
+    @Override
+    public Map<HashAlgorithm, String> getHashes() {
+        return Map.copyOf(hashes);
     }
 
     private String getRelativePath() {
@@ -87,6 +100,8 @@ public record MavenArtifact(
         private String version;
 
         private final Map<ChecksumAlgorithm, Long> checksums = new EnumMap<>(ChecksumAlgorithm.class);
+        private final Map<HashAlgorithm, String> hashes = new EnumMap<>(HashAlgorithm.class);
+
         private final Set<NativeLibrary> dependencies = new HashSet<>();
 
         private Builder() {}
@@ -120,6 +135,20 @@ public record MavenArtifact(
             return this;
         }
 
+        public Builder withHashes(Map<HashAlgorithm, String> hashes) {
+            Objects.requireNonNull(hashes, "Hash map must not be null");
+            this.hashes.putAll(hashes);
+
+            return this;
+        }
+
+        public Builder withHash(HashAlgorithm algorithm, String hashValue) {
+            Objects.requireNonNull(algorithm, "Hash algorithm must not be null");
+            this.hashes.put(algorithm, hashValue);
+
+            return this;
+        }
+
         public Builder withDependencies(Set<NativeLibrary> dependencies) {
             Objects.requireNonNull(dependencies, "Dependencies set must not be null");
             this.dependencies.addAll(dependencies);
@@ -149,6 +178,7 @@ public record MavenArtifact(
                     artifactId,
                     version,
                     checksums,
+                    hashes,
                     dependencies
             );
         }
